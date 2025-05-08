@@ -11,7 +11,8 @@ $method = $_SERVER['REQUEST_METHOD'];
 $resource = isset($_GET['resource']) ? $_GET['resource'] : 'snippets';
 
 // Función para sanitizar entradas
-function sanitize($data) {
+function sanitize($data)
+{
     return htmlspecialchars(strip_tags(trim($data)));
 }
 
@@ -22,12 +23,12 @@ switch ($resource) {
             case 'GET':
                 if (isset($_GET['id'])) {
                     $id = intval($_GET['id']);
-                    $stmt = $pdo->prepare("SELECT * FROM snippets WHERE id = ?");
+                    $stmt = $pdo->prepare("sELECT * FROM snippets WHERE id = ?");
                     $stmt->execute([$id]);
                     $snippet = $stmt->fetch(PDO::FETCH_ASSOC);
                     echo json_encode($snippet ?: ['error' => 'Snippet no encontrado']);
                 } else {
-                    $stmt = $pdo->query("SELECT * FROM snippets ORDER BY creado_en DESC");
+                    $stmt = $pdo->query("sELECT * FROM snippets ORDER BY creado_en DESC");
                     $snippets = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     echo json_encode($snippets ?: []);
                 }
@@ -46,7 +47,7 @@ switch ($resource) {
                     exit;
                 }
 
-                $stmt = $pdo->prepare("INSERT INTO snippets (titulo, codigo, lenguaje) VALUES (?, ?, ?)");
+                $stmt = $pdo->prepare("iNSERT INTO snippets (titulo, codigo, lenguaje) VALUES (?, ?, ?)");
                 $stmt->execute([$titulo, $codigo, $lenguaje]);
                 echo json_encode(['mensaje' => 'Snippet creado', 'id' => $pdo->lastInsertId()]);
                 break;
@@ -65,7 +66,7 @@ switch ($resource) {
                     exit;
                 }
 
-                $stmt = $pdo->prepare("UPDATE snippets SET titulo = ?, codigo = ?, lenguaje = ? WHERE id = ?");
+                $stmt = $pdo->prepare("uPDATE snippets sET titulo = ?, codigo = ?, lenguaje = ? WHERE id = ?");
                 $stmt->execute([$titulo, $codigo, $lenguaje, $id]);
                 echo json_encode(['mensaje' => 'Snippet actualizado']);
                 break;
@@ -79,7 +80,7 @@ switch ($resource) {
                     exit;
                 }
 
-                $stmt = $pdo->prepare("DELETE FROM snippets WHERE id = ?");
+                $stmt = $pdo->prepare("dELETE FROM snippets WHERE id = ?");
                 $stmt->execute([$id]);
                 echo json_encode(['mensaje' => 'Snippet eliminado']);
                 break;
@@ -97,12 +98,12 @@ switch ($resource) {
             case 'GET':
                 if (isset($_GET['id'])) {
                     $id = intval($_GET['id']);
-                    $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+                    $stmt = $pdo->prepare("sELECT * FROM users WHERE id = ?");
                     $stmt->execute([$id]);
                     $user = $stmt->fetch(PDO::FETCH_ASSOC);
                     echo json_encode($user ?: ['error' => 'Usuario no encontrado']);
                 } else {
-                    $stmt = $pdo->query("SELECT * FROM users ORDER BY created_at DESC");
+                    $stmt = $pdo->query("sELECT * FROM users ORDER BY created_at DESC");
                     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     echo json_encode($users ?: []);
                 }
@@ -127,7 +128,7 @@ switch ($resource) {
                 }
 
                 try {
-                    $stmt = $pdo->prepare("INSERT INTO users (username, email) VALUES (?, ?)");
+                    $stmt = $pdo->prepare("iNSERT INTO users (username, email) VALUES (?, ?)");
                     $stmt->execute([$username, $email]);
                     echo json_encode(['mensaje' => 'Usuario creado', 'id' => $pdo->lastInsertId()]);
                 } catch (PDOException $e) {
@@ -156,7 +157,7 @@ switch ($resource) {
                 }
 
                 try {
-                    $stmt = $pdo->prepare("UPDATE users SET username = ?, email = ? WHERE id = ?");
+                    $stmt = $pdo->prepare("uPDATE users sET username = ?, email = ? WHERE id = ?");
                     $stmt->execute([$username, $email, $id]);
                     echo json_encode(['mensaje' => 'Usuario actualizado']);
                 } catch (PDOException $e) {
@@ -174,7 +175,7 @@ switch ($resource) {
                     exit;
                 }
 
-                $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
+                $stmt = $pdo->prepare("dELETE FROM users WHERE id = ?");
                 $stmt->execute([$id]);
                 echo json_encode(['mensaje' => 'Usuario eliminado']);
                 break;
@@ -191,4 +192,3 @@ switch ($resource) {
         echo json_encode(['error' => 'Recurso no encontrado']);
         break;
 }
-?>
