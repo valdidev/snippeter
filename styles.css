@@ -214,7 +214,7 @@ body {
 .notification-container {
   position: fixed;
   bottom: 20px;
-  right: 20px;
+  left: 20px; /* Cambiado a izquierda */
   z-index: 1000;
   width: 300px;
 }
@@ -244,6 +244,15 @@ body {
 }
 .notification.error {
   background: var(--danger);
+}
+
+@media (max-width: 600px) {
+  .notification-container {
+    width: 90%;
+    left: 5%; /* Cambiado a izquierda */
+    right: auto;
+    bottom: 10px;
+  }
 }
 
 /* Modal */
