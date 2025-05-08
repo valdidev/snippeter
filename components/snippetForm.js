@@ -1,11 +1,20 @@
-export function initSnippetForm(formId, apiUrl, notifications, fetchSnippets) {
+export function initSnippetForm(modalId, formId, apiUrl, notifications, fetchSnippets) {
+    const modal = document.getElementById(modalId);
     const form = document.getElementById(formId);
-    const submitBtn = document.getElementById('submitBtn');
-    const cancelBtn = document.getElementById('cancelBtn');
-    const formTitle = document.getElementById('formTitle');
+    const submitBtn = document.getElementById('snippetSubmitBtn');
+    const cancelBtn = document.getElementById('snippetCancelBtn');
+    const formTitle = document.getElementById('snippetFormTitle');
+    const openModalBtn = document.getElementById('openSnippetModalBtn');
 
-    if (!form) return;
+    if (!form || !modal) return;
 
+    // Abrir modal para crear nuevo snippet
+    openModalBtn.addEventListener('click', () => {
+        resetForm();
+        modal.classList.add('show');
+    });
+
+    // Enviar formulario (Crear/Actualizar)
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('snippetId').value;
@@ -26,7 +35,7 @@ export function initSnippetForm(formId, apiUrl, notifications, fetchSnippets) {
 
             if (response.ok) {
                 notifications.showNotification(id ? 'Snippet actualizado' : 'Snippet guardado', 'info');
-                resetForm();
+                modal.classList.remove('show');
                 fetchSnippets();
             } else {
                 notifications.showNotification(result.error || 'Error al guardar el snippet', 'error');
@@ -36,14 +45,18 @@ export function initSnippetForm(formId, apiUrl, notifications, fetchSnippets) {
         }
     });
 
-    cancelBtn.addEventListener('click', resetForm);
+    // Botón Cancelar (cerrar modal)
+    cancelBtn.addEventListener('click', () => {
+        modal.classList.remove('show');
+    });
 
+    // Editar snippet
     async function editSnippet(id) {
         try {
             const response = await fetch(`${apiUrl}?id=${id}`);
             const snippet = await response.json();
-            if (snippet.error) {
-                notifications.showNotification(snippet.error, 'error');
+            if (snippet.error || !snippet.id) {
+                notifications.showNotification(snippet.error || 'Snippet no encontrado', 'error');
                 return;
             }
             document.getElementById('snippetId').value = snippet.id;
@@ -52,19 +65,22 @@ export function initSnippetForm(formId, apiUrl, notifications, fetchSnippets) {
             document.getElementById('lenguaje').value = snippet.lenguaje;
             formTitle.textContent = 'Editar Snippet';
             submitBtn.textContent = 'Actualizar';
-            cancelBtn.style.display = 'inline-block';
+            modal.classList.add('show');
         } catch (error) {
             notifications.showNotification('Error al cargar el snippet', 'error');
         }
     }
 
+    // Reiniciar formulario
     function resetForm() {
         form.reset();
         document.getElementById('snippetId').value = '';
         formTitle.textContent = 'Agregar Snippet';
         submitBtn.textContent = 'Guardar';
-        cancelBtn.style.display = 'none';
     }
+
+    // Exponer editSnippet al ámbito global para los botones inline
+    window.editSnippet = editSnippet;
 
     return { editSnippet };
 }
