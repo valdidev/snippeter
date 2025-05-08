@@ -22,7 +22,7 @@ export function initSnippetForm(modalId, formId, apiUrl, notifications, fetchSni
             const users = await fetchUsers(apiUrl, notifications);
             console.log('Usuarios recibidos en loadUsers:', users);
 
-            usuariosSelect.innerHTML = ''; // Limpiar el select
+            usuariosSelect.innerHTML = '';
             if (!users || users.length === 0) {
                 console.log('No se encontraron usuarios');
                 usuariosSelect.innerHTML = '<option value="" disabled>No hay usuarios disponibles</option>';
@@ -65,7 +65,9 @@ export function initSnippetForm(modalId, formId, apiUrl, notifications, fetchSni
         const titulo = document.getElementById('titulo').value;
         const codigo = document.getElementById('codigo').value;
         const lenguaje = document.getElementById('lenguaje').value;
-        const usuarios = Array.from(usuariosSelect.selectedOptions).map(option => parseInt(option.value));
+        const usuarios = Array.from(usuariosSelect.selectedOptions)
+            .map(option => parseInt(option.value))
+            .filter(id => !isNaN(id)); // Filtrar valores no válidos
 
         console.log('Enviando formulario con usuarios:', usuarios);
 
@@ -118,11 +120,13 @@ export function initSnippetForm(modalId, formId, apiUrl, notifications, fetchSni
             
             // Cargar usuarios y marcar los asignados
             await loadUsers();
-            if (snippet.usuarios) {
+            if (snippet.usuarios && Array.isArray(snippet.usuarios)) {
                 console.log('Usuarios asignados al snippet:', snippet.usuarios);
                 Array.from(usuariosSelect.options).forEach(option => {
                     option.selected = snippet.usuarios.includes(parseInt(option.value));
                 });
+            } else {
+                console.log('No hay usuarios asignados al snippet');
             }
             
             modal.classList.add('show');

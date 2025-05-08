@@ -27,19 +27,23 @@ switch ($resource) {
                     $stmt->execute([$id]);
                     $snippet = $stmt->fetch(PDO::FETCH_ASSOC);
                     if ($snippet) {
-                        // Obtener usuarios asignados
-                        $stmt = $pdo->prepare("SELECT user_id FROM snippet_users WHERE snippet_id = ?");
+                        // Obtener usuarios asignados (usamos DISTINCT para evitar duplicados)
+                        $stmt = $pdo->prepare("SELECT DISTINCT user_id FROM snippet_users WHERE snippet_id = ?");
                         $stmt->execute([$id]);
-                        $snippet['usuarios'] = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                        $usuarios = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                        $snippet['usuarios'] = array_map('intval', $usuarios); // Convertir a enteros
+                        error_log("Usuarios asignados al snippet $id: " . json_encode($snippet['usuarios']));
                     }
                     echo json_encode($snippet ?: ['error' => 'Snippet no encontrado']);
                 } else {
                     $stmt = $pdo->query("SELECT * FROM snippets ORDER BY creado_en DESC");
                     $snippets = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     foreach ($snippets as &$snippet) {
-                        $stmt = $pdo->prepare("SELECT user_id FROM snippet_users WHERE snippet_id = ?");
+                        $stmt = $pdo->prepare("SELECT DISTINCT user_id FROM snippet_users WHERE snippet_id = ?");
                         $stmt->execute([$snippet['id']]);
-                        $snippet['usuarios'] = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                        $usuarios = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                        $snippet['usuarios'] = array_map('intval', $usuarios);
+                        error_log("Usuarios asignados al snippet {$snippet['id']}: " . json_encode($snippet['usuarios']));
                     }
                     echo json_encode($snippets ?: []);
                 }
@@ -51,7 +55,9 @@ switch ($resource) {
                 $titulo = sanitize($data['titulo'] ?? '');
                 $codigo = sanitize($data['codigo'] ?? '');
                 $lenguaje = sanitize($data['lenguaje'] ?? '');
-                $usuarios = $data['usuarios'] ?? [];
+                $usuarios = array_unique(array_map('intval', $data['usuarios'] ?? [])); // Eliminar duplicados y convertir a enteros
+
+                error_log("Usuarios recibidos para crear snippet: " . json_encode($usuarios));
 
                 if (empty($titulo) || empty($codigo) || empty($lenguaje)) {
                     http_response_code(400);
@@ -65,11 +71,18 @@ switch ($resource) {
                     $stmt->execute([$titulo, $codigo, $lenguaje]);
                     $snippetId = $pdo->lastInsertId();
 
-                    // Asignar usuarios
+                    // Asignar usuarios (solo si existen en la tabla users)
                     if (!empty($usuarios)) {
-                        $stmt = $pdo->prepare("INSERT INTO snippet_users (snippet_id, user_id) VALUES (?, ?)");
-                        foreach ($usuarios as $userId) {
-                            $stmt->execute([$snippetId, intval($userId)]);
+                        $stmt = $pdo->prepare("SELECT id FROM users WHERE id IN (" . implode(',', array_fill(0, count($usuarios), '?')) . ")");
+                        $stmt->execute($usuarios);
+                        $validUserIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+                        if (!empty($validUserIds)) {
+                            $stmt = $pdo->prepare("INSERT INTO snippet_users (snippet_id, user_id) VALUES (?, ?)");
+                            foreach ($validUserIds as $userId) {
+                                $stmt->execute([$snippetId, $userId]);
+                            }
+                            error_log("Usuarios asignados al snippet $snippetId: " . json_encode($validUserIds));
                         }
                     }
 
@@ -77,6 +90,7 @@ switch ($resource) {
                     echo json_encode(['mensaje' => 'Snippet creado', 'id' => $snippetId]);
                 } catch (Exception $e) {
                     $pdo->rollBack();
+                    error_log("Error al crear snippet: " . $e->getMessage());
                     http_response_code(400);
                     echo json_encode(['error' => 'Error al crear el snippet']);
                 }
@@ -89,7 +103,9 @@ switch ($resource) {
                 $titulo = sanitize($data['titulo'] ?? '');
                 $codigo = sanitize($data['codigo'] ?? '');
                 $lenguaje = sanitize($data['lenguaje'] ?? '');
-                $usuarios = $data['usuarios'] ?? [];
+                $usuarios = array_unique(array_map('intval', $data['usuarios'] ?? [])); // Eliminar duplicados y convertir a enteros
+
+                error_log("Usuarios recibidos para actualizar snippet $id: " . json_encode($usuarios));
 
                 if ($id <= 0 || empty($titulo) || empty($codigo) || empty($lenguaje)) {
                     http_response_code(400);
@@ -102,13 +118,22 @@ switch ($resource) {
                     $stmt = $pdo->prepare("UPDATE snippets SET titulo = ?, codigo = ?, lenguaje = ? WHERE id = ?");
                     $stmt->execute([$titulo, $codigo, $lenguaje, $id]);
 
-                    // Actualizar asignaciones de usuarios
+                    // Limpiar asignaciones existentes
                     $stmt = $pdo->prepare("DELETE FROM snippet_users WHERE snippet_id = ?");
                     $stmt->execute([$id]);
+
+                    // Asignar nuevos usuarios (solo si existen en la tabla users)
                     if (!empty($usuarios)) {
-                        $stmt = $pdo->prepare("INSERT INTO snippet_users (snippet_id, user_id) VALUES (?, ?)");
-                        foreach ($usuarios as $userId) {
-                            $stmt->execute([$id, intval($userId)]);
+                        $stmt = $pdo->prepare("SELECT id FROM users WHERE id IN (" . implode(',', array_fill(0, count($usuarios), '?')) . ")");
+                        $stmt->execute($usuarios);
+                        $validUserIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+                        if (!empty($validUserIds)) {
+                            $stmt = $pdo->prepare("INSERT INTO snippet_users (snippet_id, user_id) VALUES (?, ?)");
+                            foreach ($validUserIds as $userId) {
+                                $stmt->execute([$id, $userId]);
+                            }
+                            error_log("Usuarios asignados al snippet $id: " . json_encode($validUserIds));
                         }
                     }
 
@@ -116,6 +141,7 @@ switch ($resource) {
                     echo json_encode(['mensaje' => 'Snippet actualizado']);
                 } catch (Exception $e) {
                     $pdo->rollBack();
+                    error_log("Error al actualizar snippet: " . $e->getMessage());
                     http_response_code(400);
                     echo json_encode(['error' => 'Error al actualizar el snippet']);
                 }
