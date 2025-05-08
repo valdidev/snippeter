@@ -31,6 +31,12 @@
                     <option value="css">CSS</option>
                 </select>
             </div>
+            <div class="form-group">
+                <label for="usuarios">Usuarios asignados</label>
+                <select class="form-select" id="usuarios" multiple>
+                    <!-- Opciones cargadas dinámicamente por JS -->
+                </select>
+            </div>
             <div class="form-buttons">
                 <button type="submit" class="btn btn-primary" id="snippetSubmitBtn">Guardar</button>
                 <button type="button" class="btn btn-secondary" id="snippetCancelBtn">Cancelar</button>

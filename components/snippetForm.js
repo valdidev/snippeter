@@ -1,3 +1,5 @@
+import { fetchUsers } from './userManager.js';
+
 export function initSnippetForm(modalId, formId, apiUrl, notifications, fetchSnippets) {
     const modal = document.getElementById(modalId);
     const form = document.getElementById(formId);
@@ -5,12 +7,30 @@ export function initSnippetForm(modalId, formId, apiUrl, notifications, fetchSni
     const cancelBtn = document.getElementById('snippetCancelBtn');
     const formTitle = document.getElementById('snippetFormTitle');
     const openModalBtn = document.getElementById('openSnippetModalBtn');
+    const usuariosSelect = document.getElementById('usuarios');
 
-    if (!form || !modal) return;
+    if (!form || !modal || !usuariosSelect) return;
+
+    // Cargar lista de usuarios en el select
+    async function loadUsers() {
+        try {
+            const users = await fetchUsers(apiUrl, notifications);
+            usuariosSelect.innerHTML = '';
+            users.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.id;
+                option.textContent = user.username;
+                usuariosSelect.appendChild(option);
+            });
+        } catch (error) {
+            notifications.showNotification('Error al cargar los usuarios', 'error');
+        }
+    }
 
     // Abrir modal para crear nuevo snippet
     openModalBtn.addEventListener('click', () => {
         resetForm();
+        loadUsers();
         modal.classList.add('show');
     });
 
@@ -21,9 +41,10 @@ export function initSnippetForm(modalId, formId, apiUrl, notifications, fetchSni
         const titulo = document.getElementById('titulo').value;
         const codigo = document.getElementById('codigo').value;
         const lenguaje = document.getElementById('lenguaje').value;
+        const usuarios = Array.from(usuariosSelect.selectedOptions).map(option => parseInt(option.value));
 
         const method = id ? 'PUT' : 'POST';
-        const body = JSON.stringify({ id, titulo, codigo, lenguaje });
+        const body = JSON.stringify({ id, titulo, codigo, lenguaje, usuarios });
 
         try {
             const response = await fetch(apiUrl, {
@@ -65,6 +86,15 @@ export function initSnippetForm(modalId, formId, apiUrl, notifications, fetchSni
             document.getElementById('lenguaje').value = snippet.lenguaje;
             formTitle.textContent = 'Editar Snippet';
             submitBtn.textContent = 'Actualizar';
+            
+            // Cargar usuarios y marcar los asignados
+            await loadUsers();
+            if (snippet.usuarios) {
+                Array.from(usuariosSelect.options).forEach(option => {
+                    option.selected = snippet.usuarios.includes(parseInt(option.value));
+                });
+            }
+            
             modal.classList.add('show');
         } catch (error) {
             notifications.showNotification('Error al cargar el snippet', 'error');
@@ -77,6 +107,7 @@ export function initSnippetForm(modalId, formId, apiUrl, notifications, fetchSni
         document.getElementById('snippetId').value = '';
         formTitle.textContent = 'Agregar Snippet';
         submitBtn.textContent = 'Guardar';
+        usuariosSelect.innerHTML = '';
     }
 
     // Exponer editSnippet al ámbito global para los botones inline

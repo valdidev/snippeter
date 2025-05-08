@@ -8,35 +8,35 @@ const apiUrl = "api.php";
 
 // Inicializar componentes según la vista activa
 if (document.getElementById("snippetList")) {
-  const notifications = initNotifications("notificationContainer");
-  const snippetList = initSnippetList("snippetList", apiUrl, notifications);
-  const snippetForm = initSnippetForm(
-    "snippetFormModal",
-    "snippetForm",
-    apiUrl,
-    notifications,
-    snippetList.fetchSnippets
-  );
-  initDeleteModal(
-    "deleteModal",
-    apiUrl,
-    notifications,
-    snippetList.fetchSnippets
-  );
+    const notifications = initNotifications("notificationContainer");
+    const snippetList = initSnippetList("snippetList", apiUrl, notifications);
+    const snippetForm = initSnippetForm(
+        "snippetFormModal",
+        "snippetForm",
+        apiUrl,
+        notifications,
+        snippetList.fetchSnippets
+    );
+    initDeleteModal(
+        "deleteModal",
+        apiUrl,
+        notifications,
+        snippetList.fetchSnippets
+    );
 
-  // Cargar snippets al iniciar
-  snippetList.fetchSnippets();
+    // Cargar snippets al iniciar
+    snippetList.fetchSnippets();
 } else if (document.getElementById("userList")) {
-  const notifications = initNotifications("notificationContainer");
-  const userManager = initUserManager(
-    "userFormModal",
-    "userForm",
-    "userList",
-    "userDeleteModal",
-    apiUrl,
-    notifications
-  );
+    const notifications = initNotifications("notificationContainer");
+    const userManager = initUserManager(
+        "userFormModal",
+        "userForm",
+        "userList",
+        "userDeleteModal",
+        apiUrl,
+        notifications
+    );
 
-  // Cargar usuarios al iniciar
-  userManager.fetchUsers();
+    // Cargar usuarios al iniciar
+    userManager.fetchUsers();
 }

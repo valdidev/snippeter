@@ -12,3 +12,12 @@ CREATE TABLE users (
     email VARCHAR(255) NOT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE snippet_users (
+    snippet_id INT NOT NULL,
+    user_id INT NOT NULL,
+    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (snippet_id, user_id),
+    FOREIGN KEY (snippet_id) REFERENCES snippets(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);

@@ -122,6 +122,11 @@ body {
   background-size: 16px;
 }
 
+.form-select[multiple] {
+  height: 100px;
+  padding: 5px;
+}
+
 .form-buttons {
   display: flex;
   gap: 10px;
@@ -210,11 +215,20 @@ body {
   margin-top: 10px;
 }
 
+.snippet-card .user-tag {
+  background: var(--primary);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  margin-right: 5px;
+}
+
 /* Notificaciones */
 .notification-container {
   position: fixed;
   bottom: 20px;
-  left: 20px; /* Cambiado a izquierda */
+  left: 20px;
   z-index: 1000;
   width: 300px;
 }
@@ -249,7 +263,7 @@ body {
 @media (max-width: 600px) {
   .notification-container {
     width: 90%;
-    left: 5%; /* Cambiado a izquierda */
+    left: 5%;
     right: auto;
     bottom: 10px;
   }
