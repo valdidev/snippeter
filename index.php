@@ -3,533 +3,82 @@ $view = isset($_GET['view']) ? $_GET['view'] : 'snippets';
 ?>
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snippet Keeper</title>
-    <style>
-        :root {
-            --primary: #2563eb;
-            --success: #16a34a;
-            --warning: #f59e0b;
-            --danger: #dc2626;
-            --background: #f9fafb;
-            --card-bg: #ffffff;
-            --text: #1f2937;
-            --text-muted: #6b7280;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-
-        body {
-            background: var(--background);
-            color: var(--text);
-        }
-
-        /* Header */
-        .header {
-            background: var(--primary);
-            color: #fff;
-            padding: 15px 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .header nav {
-            max-width: 800px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-        }
-
-        .header h1 {
-            font-size: 1.5rem;
-            flex: 1;
-        }
-
-        .header ul {
-            list-style: none;
-            display: flex;
-            gap: 20px;
-        }
-
-        .header a {
-            color: #fff;
-            text-decoration: none;
-            font-size: 1rem;
-            transition: opacity 0.2s;
-        }
-
-        .header a:hover {
-            opacity: 0.8;
-        }
-
-        /* Contenedor principal */
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 0 20px;
-        }
-
-        /* Formulario */
-        .form-card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
-        .form-card h2 {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 5px;
-        }
-
-        .form-input,
-        .form-textarea,
-        .form-select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #d1d5db;
-            border-radius: 5px;
-            font-size: 1rem;
-            background: #fff;
-        }
-
-        .form-textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .form-select {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231f2937' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 10px center;
-            background-size: 16px;
-        }
-
-        .form-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: #fff;
-        }
-
-        .btn-primary:hover {
-            background: #1d4ed8;
-        }
-
-        .btn-secondary {
-            background: #6b7280;
-            color: #fff;
-        }
-
-        .btn-secondary:hover {
-            background: #4b5563;
-        }
-
-        /* Tarjetas de snippets */
-        .snippet-card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-
-        .snippet-card h3 {
-            font-size: 1.25rem;
-            margin-bottom: 10px;
-        }
-
-        .snippet-card p {
-            margin-bottom: 10px;
-        }
-
-        .snippet-card pre {
-            background: #f3f4f6;
-            padding: 15px;
-            border-radius: 5px;
-            overflow-x: auto;
-            font-size: 0.9rem;
-        }
-
-        .snippet-card .text-muted {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-        }
-
-        .snippet-card .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .btn-warning {
-            background: var(--warning);
-            color: #fff;
-        }
-
-        .btn-warning:hover {
-            background: #d97706;
-        }
-
-        .btn-danger {
-            background: var(--danger);
-            color: #fff;
-        }
-
-        .btn-danger:hover {
-            background: #b91c1c;
-        }
-
-        /* Notificaciones */
-        .notification-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-            width: 300px;
-        }
-
-        .notification {
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            color: #fff;
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .notification.show {
-            opacity: 1;
-        }
-
-        .notification.info { background: var(--primary); }
-        .notification.success { background: var(--success); }
-        .notification.warning { background: var(--warning); }
-        .notification.error { background: var(--danger); }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal.show {
-            display: flex;
-        }
-
-        .modal-content {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            max-width: 400px;
-            width: 90%;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-        }
-
-        .modal-content h2 {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-        }
-
-        .modal-content p {
-            margin-bottom: 20px;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-
-        /* Responsividad */
-        @media (max-width: 600px) {
-            .container {
-                padding: 0 10px;
-            }
-
-            .header nav {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .header ul {
-                margin-top: 10px;
-            }
-
-            .form-buttons, .btn-group, .modal-buttons {
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .btn {
-                width: 100%;
-                text-align: center;
-            }
-
-            .notification-container {
-                width: 90%;
-                right: 5%;
-                bottom: 10px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snippet Keeper</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-    <!-- Header -->
-    <header class="header">
-        <nav>
-            <h1>Snippet Keeper</h1>
-            <ul>
-                <li><a href="?view=snippets" <?= $view === 'snippets' ? 'style="font-weight: bold;"' : '' ?>>Snippets</a></li>
-            </ul>
-        </nav>
-    </header>
+  <!-- Header -->
+  <header class="header">
+    <nav>
+      <h1>Snippet Keeper</h1>
+      <ul>
+        <li><a href="?view=snippets" <?= $view === 'snippets' ? 'style="font-weight: bold;"' : '' ?>>Snippets</a></li>
+      </ul>
+    </nav>
+  </header>
 
-    <!-- Contenedor principal -->
-    <div class="container">
-        <?php if ($view === 'snippets'): ?>
-            <!-- Contenedor para notificaciones -->
-            <div class="notification-container" id="notificationContainer"></div>
+  <!-- Contenedor principal -->
+  <div class="container">
+    <?php if ($view === 'snippets'): ?>
+      <!-- Contenedor para notificaciones -->
+      <div class="notification-container" id="notificationContainer"></div>
 
-            <!-- Formulario para crear/actualizar snippets -->
-            <div class="form-card">
-                <h2 id="formTitle">Agregar Snippet</h2>
-                <form id="snippetForm">
-                    <input type="hidden" id="snippetId">
-                    <div class="form-group">
-                        <label for="titulo">Título</label>
-                        <input type="text" class="form-input" id="titulo" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="codigo">Código</label>
-                        <textarea class="form-textarea" id="codigo" required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="lenguaje">Lenguaje</label>
-                        <select class="form-select" id="lenguaje" required>
-                            <option value="php">PHP</option>
-                            <option value="javascript">JavaScript</option>
-                            <option value="python">Python</option>
-                            <option value="html">HTML</option>
-                            <option value="css">CSS</option>
-                        </select>
-                    </div>
-                    <div class="form-buttons">
-                        <button type="submit" class="btn btn-primary" id="submitBtn">Guardar</button>
-                        <button type="button" class="btn btn-secondary" id="cancelBtn" style="display:none;">Cancelar</button>
-                    </div>
-                </form>
-            </div>
+      <!-- Formulario para crear/actualizar snippets -->
+      <div class="form-card">
+        <h2 id="formTitle">Agregar Snippet</h2>
+        <form id="snippetForm">
+          <input type="hidden" id="snippetId">
+          <div class="form-group">
+            <label for="titulo">Título</label>
+            <input type="text" class="form-input" id="titulo" required>
+          </div>
+          <div class="form-group">
+            <label for="codigo">Código</label>
+            <textarea class="form-textarea" id="codigo" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="lenguaje">Lenguaje</label>
+            <select class="form-select" id="lenguaje" required>
+              <option value="php">PHP</option>
+              <option value="javascript">JavaScript</option>
+              <option value="python">Python</option>
+              <option value="html">HTML</option>
+              <option value="css">CSS</option>
+            </select>
+          </div>
+          <div class="form-buttons">
+            <button type="submit" class="btn btn-primary" id="submitBtn">Guardar</button>
+            <button type="button" class="btn btn-secondary" id="cancelBtn" style="display:none;">Cancelar</button>
+          </div>
+        </form>
+      </div>
 
-            <!-- Lista de snippets -->
-            <div id="snippetList"></div>
+      <!-- Lista de snippets -->
+      <div id="snippetList"></div>
 
-            <!-- Modal de confirmación -->
-            <div class="modal" id="deleteModal">
-                <div class="modal-content">
-                    <h2>Confirmar Eliminación</h2>
-                    <p>¿Estás seguro de que quieres eliminar este snippet?</p>
-                    <div class="modal-buttons">
-                        <button class="btn btn-secondary" id="cancelDeleteBtn">Cancelar</button>
-                        <button class="btn btn-danger" id="confirmDeleteBtn">Confirmar</button>
-                    </div>
-                </div>
-            </div>
-        <?php else: ?>
-            <h2>Vista no encontrada</h2>
-            <p>Selecciona una opción del menú.</p>
-        <?php endif; ?>
-    </div>
+      <!-- Modal de confirmación -->
+      <div class="modal" id="deleteModal">
+        <div class="modal-content">
+          <h2>Confirmar Eliminación</h2>
+          <p>¿Estás seguro de que quieres eliminar este snippet?</p>
+          <div class="modal-buttons">
+            <button class="btn btn-secondary" id="cancelDeleteBtn">Cancelar</button>
+            <button class="btn btn-danger" id="confirmDeleteBtn">Confirmar</button>
+          </div>
+        </div>
+      </div>
+    <?php else: ?>
+      <h2>Vista no encontrada</h2>
+      <p>Selecciona una opción del menú.</p>
+    <?php endif; ?>
+  </div>
 
-    <script>
-        const apiUrl = 'api.php';
-        const form = document.getElementById('snippetForm');
-        const snippetList = document.getElementById('snippetList');
-        const submitBtn = document.getElementById('submitBtn');
-        const cancelBtn = document.getElementById('cancelBtn');
-        const formTitle = document.getElementById('formTitle');
-        const notificationContainer = document.getElementById('notificationContainer');
-        const deleteModal = document.getElementById('deleteModal');
-        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
-        let deleteSnippetId = null;
-
-        // Función para mostrar notificaciones
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            notificationContainer.appendChild(notification);
-
-            setTimeout(() => {
-                notification.classList.add('show');
-            }, 100);
-
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => {
-                    notification.remove();
-                }, 300);
-            }, 3000);
-        }
-
-        // Cargar snippets al iniciar
-        if (document.getElementById('snippetList')) {
-            fetchSnippets();
-        }
-
-        // Enviar formulario (Crear/Actualizar)
-        if (form) {
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const id = document.getElementById('snippetId').value;
-                const titulo = document.getElementById('titulo').value;
-                const codigo = document.getElementById('codigo').value;
-                const lenguaje = document.getElementById('lenguaje').value;
-
-                const method = id ? 'PUT' : 'POST';
-                const body = JSON.stringify({ id, titulo, codigo, lenguaje });
-
-                const response = await fetch(apiUrl, {
-                    method,
-                    headers: { 'Content-Type': 'application/json' },
-                    body
-                });
-                const result = await response.json();
-
-                if (response.ok) {
-                    showNotification(id ? 'Snippet actualizado' : 'Snippet guardado', 'info');
-                    resetForm();
-                    fetchSnippets();
-                } else {
-                    showNotification(result.error || 'Error al guardar el snippet', 'error');
-                }
-            });
-        }
-
-        // Botón Cancelar (reiniciar formulario)
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', resetForm);
-        }
-
-        // Obtener y mostrar snippets
-        async function fetchSnippets() {
-            const response = await fetch(apiUrl);
-            const snippets = await response.json();
-            snippetList.innerHTML = '';
-            snippets.forEach(snippet => {
-                const card = document.createElement('div');
-                card.className = 'snippet-card';
-                card.innerHTML = `
-                    <h3>${snippet.titulo}</h3>
-                    <p><strong>Lenguaje:</strong> ${snippet.lenguaje}</p>
-                    <pre>${snippet.codigo}</pre>
-                    <p class="text-muted">Creado: ${new Date(snippet.creado_en).toLocaleString()}</p>
-                    <div class="btn-group">
-                        <button class="btn btn-warning" onclick="editSnippet(${snippet.id})">Editar</button>
-                        <button class="btn btn-danger" onclick="showDeleteModal(${snippet.id})">Eliminar</button>
-                    </div>
-                `;
-                snippetList.appendChild(card);
-            });
-        }
-
-        // Editar snippet
-        async function editSnippet(id) {
-            const response = await fetch(`${apiUrl}?id=${id}`);
-            const snippet = await response.json();
-            if (snippet.error) {
-                showNotification(snippet.error, 'error');
-                return;
-            }
-            document.getElementById('snippetId').value = snippet.id;
-            document.getElementById('titulo').value = snippet.titulo;
-            document.getElementById('codigo').value = snippet.codigo;
-            document.getElementById('lenguaje').value = snippet.lenguaje;
-            formTitle.textContent = 'Editar Snippet';
-            submitBtn.textContent = 'Actualizar';
-            cancelBtn.style.display = 'inline-block';
-        }
-
-        // Mostrar modal de eliminación
-        function showDeleteModal(id) {
-            deleteSnippetId = id;
-            deleteModal.classList.add('show');
-        }
-
-        // Confirmar eliminación
-        if (confirmDeleteBtn) {
-            confirmDeleteBtn.addEventListener('click', async () => {
-                if (deleteSnippetId) {
-                    const response = await fetch(`${apiUrl}?id=${deleteSnippetId}`, { method: 'DELETE' });
-                    const result = await response.json();
-                    if (response.ok) {
-                        showNotification(result.mensaje, 'success');
-                        fetchSnippets();
-                    } else {
-                        showNotification(result.error || 'Error al eliminar el snippet', 'error');
-                    }
-                }
-                deleteModal.classList.remove('show');
-                deleteSnippetId = null;
-            });
-        }
-
-        // Cancelar eliminación
-        if (cancelDeleteBtn) {
-            cancelDeleteBtn.addEventListener('click', () => {
-                deleteModal.classList.remove('show');
-                deleteSnippetId = null;
-            });
-        }
-
-        // Reiniciar formulario
-        function resetForm() {
-            form.reset();
-            document.getElementById('snippetId').value = '';
-            formTitle.textContent = 'Agregar Snippet';
-            submitBtn.textContent = 'Guardar';
-            cancelBtn.style.display = 'none';
-        }
-    </script>
+  <script type="module" src="app.js"></script>
 </body>
+
 </html>
